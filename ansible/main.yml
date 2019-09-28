@@ -1,0 +1,42 @@
+---
+# This playbook deploys the whole application stack in this site.
+
+- name: deploy my-netty-gateway
+  hosts: my-netty-gateway
+  remote_user: root
+  tags: "my-netty-gateway"
+
+  roles:
+    - my-netty-gateway
+
+- name: deploy my-base-service
+  hosts: my-base-service
+  remote_user: root
+  tags: "my-base-service"
+
+  roles:
+    - my-base-service
+
+- name: deploy my-gps
+  hosts: my-gps
+  remote_user: root
+  tags: "my-gps"
+
+  roles:
+    - my-gps
+
+- name: deploy my-attachment
+  hosts: my-attachment
+  remote_user: root
+  tags: "my-attachment"
+
+  roles:
+    - my-attachment
+
+- name: deploy my-eureka-server
+  hosts: my-eureka-server
+  remote_user: root
+  tags: "my-eureka-server"
+
+  roles:
+    - my-eureka-server

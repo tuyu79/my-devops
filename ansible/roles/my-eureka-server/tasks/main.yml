@@ -1,0 +1,18 @@
+---
+# This playbook contains common plays that will be run on all nodes.
+
+- name: "Create service config dir"
+  shell: mkdir -p /data/home/my-eureka-server/config
+- name: "Copy application.properties"
+  template: src=application.properties dest=/data/home/my-eureka-server/config
+- name: "Copy logback.xml"
+  template: src=logback.xml dest=/data/home/my-eureka-server/config
+- name: "Stop and remove old version container"
+  shell: docker rm -f my-eureka-server
+  ignore_errors: true
+- name: "Login docker registry"
+  shell: docker login -u{{ docker_registry_username }}  -p{{ docker_registry_password }} http://{{ docker_registry_addr }}
+- name: "Start new version container"
+  shell: docker run -d --net=host -v/data/home:/data/home --restart=on-failure --name my-eureka-server {{ docker_registry_addr }}/{{ IMAGE_NAME }}
+- name: "Logout docker registry"
+  shell: docker logout http://{{ docker_registry_addr }}

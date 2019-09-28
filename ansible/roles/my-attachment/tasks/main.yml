@@ -1,0 +1,18 @@
+---
+# This playbook contains common plays that will be run on all nodes.
+
+- name: "Create service config dir"
+  shell: mkdir -p /data/home/my-attachment/config
+- name: "Copy application.properties"
+  template: src=application.properties dest=/data/home/my-attachment/config
+- name: "Copy logback.xml"
+  template: src=logback.xml dest=/data/home/my-attachment/config
+- name: "Stop and remove old version container"
+  shell: docker rm -f my-attachment
+  ignore_errors: true
+- name: "Login docker registry"
+  shell: docker login -u{{ docker_registry_username }}  -p{{ docker_registry_password }} http://{{ docker_registry_addr }}
+- name: "Start new version container"
+  shell: docker run -d --net=host -v/data/home:/data/home --restart=on-failure --name my-attachment {{ docker_registry_addr }}/{{ IMAGE_NAME }}
+- name: "Logout docker registry"
+  shell: docker logout http://{{ docker_registry_addr }}

@@ -1,0 +1,205 @@
+#============================  Config Reloading ===============================
+
+# Config reloading allows to dynamically load modules. Each file which is
+# monitored must contain one or multiple modules as a list.
+metricbeat.config.modules:
+
+  # Glob pattern for configuration reloading
+  path: ${path.config}/conf.d/*.yml
+
+  # Period on which files under path should be checked for changes
+  reload.period: 10s
+
+  # Set to true to enable config reloading
+  reload.enabled: false
+
+# Maximum amount of time to randomly delay the start of a metricset. Use 0 to
+# disable startup delay.
+metricbeat.max_start_delay: 10s
+
+
+#==========================  Modules configuration =============================
+metricbeat.modules:
+
+  #-------------------------------- System Module --------------------------------
+  - module: system
+    metricsets:
+      - cpu             # CPU usage
+      - load            # CPU load averages
+      - memory          # Memory usage
+      - network         # Network IO
+      - process         # Per process metrics
+      - process_summary # Process summary
+      - uptime          # System Uptime
+      - socket_summary  # Socket summary
+      #- core           # Per CPU core usage
+      #- diskio         # Disk IO
+      #- filesystem     # File system usage for each mountpoint
+      #- fsstat         # File system summary metrics
+      #- raid           # Raid
+      #- socket         # Sockets and connection info (linux only)
+    enabled: true
+    period: 10s
+    processes: ['.*']
+
+    # Configure the metric types that are included by these metricsets.
+    cpu.metrics:  ["percentages"]  # The other available options are normalized_percentages and ticks.
+    core.metrics: ["percentages"]  # The other available option is ticks.
+
+      # A list of filesystem types to ignore. The filesystem metricset will not
+      # collect data from filesystems matching any of the specified types, and
+      # fsstats will not include data from these filesystems in its summary stats.
+      # If not set, types associated to virtual filesystems are automatically
+      # added when this information is available in the system (e.g. the list of
+      # `nodev` types in `/proc/filesystem`).
+      #filesystem.ignore_types: []
+
+      # These options allow you to filter out all processes that are not
+      # in the top N by CPU or memory, in order to reduce the number of documents created.
+      # If both the `by_cpu` and `by_memory` options are used, the union of the two sets
+      # is included.
+      #process.include_top_n:
+
+      # Set to false to disable this feature and include all processes
+      #enabled: true
+
+      # How many processes to include from the top by CPU. The processes are sorted
+    # by the `system.process.cpu.total.pct` field.
+    #by_cpu: 0
+
+    # How many processes to include from the top by memory. The processes are sorted
+    # by the `system.process.memory.rss.bytes` field.
+    #by_memory: 0
+
+    # If false, cmdline of a process is not cached.
+    #process.cmdline.cache.enabled: true
+
+    # Enable collection of cgroup metrics from processes on Linux.
+    #process.cgroups.enabled: true
+
+    # A list of regular expressions used to whitelist environment variables
+    # reported with the process metricset's events. Defaults to empty.
+    #process.env.whitelist: []
+
+    # Include the cumulative CPU tick values with the process metrics. Defaults
+    # to false.
+    #process.include_cpu_ticks: false
+
+    # Raid mount point to monitor
+    #raid.mount_point: '/'
+
+    # Configure reverse DNS lookup on remote IP addresses in the socket metricset.
+    #socket.reverse_lookup.enabled: false
+    #socket.reverse_lookup.success_ttl: 60s
+    #socket.reverse_lookup.failure_ttl: 60s
+
+    # Diskio configurations
+    #diskio.include_devices: []
+
+#----------------------------- Logstash output ---------------------------------
+output.logstash:
+    # Boolean flag to enable or disable the output module.
+    enabled: true
+
+    # The Logstash hosts
+    hosts: ["172.17.0.4:5044"]
+
+    # Number of workers per Logstash host.
+    #worker: 1
+
+    # Set gzip compression level.
+    #compression_level: 3
+
+    # Configure escaping HTML symbols in strings.
+    #escape_html: false
+
+    # Optional maximum time to live for a connection to Logstash, after which the
+    # connection will be re-established.  A value of `0s` (the default) will
+    # disable this feature.
+    #
+    # Not yet supported for async connections (i.e. with the "pipelining" option set)
+    #ttl: 30s
+
+    # Optionally load-balance events between Logstash hosts. Default is false.
+    #loadbalance: false
+
+    # Number of batches to be sent asynchronously to Logstash while processing
+    # new batches.
+    #pipelining: 2
+
+    # If enabled only a subset of events in a batch of events is transferred per
+    # transaction.  The number of events to be sent increases up to `bulk_max_size`
+    # if no error is encountered.
+    #slow_start: false
+
+    # The number of seconds to wait before trying to reconnect to Logstash
+    # after a network error. After waiting backoff.init seconds, the Beat
+    # tries to reconnect. If the attempt fails, the backoff timer is increased
+    # exponentially up to backoff.max. After a successful connection, the backoff
+    # timer is reset. The default is 1s.
+    #backoff.init: 1s
+
+    # The maximum number of seconds to wait before attempting to connect to
+    # Logstash after a network error. The default is 60s.
+    #backoff.max: 60s
+
+    # Optional index name. The default index name is set to metricbeat
+    # in all lowercase.
+    #index: 'metricbeat'
+
+    # SOCKS5 proxy server URL
+    #proxy_url: socks5://user:password@socks5-server:2233
+
+    # Resolve names locally when using a proxy server. Defaults to false.
+    #proxy_use_local_resolver: false
+
+    # Enable SSL support. SSL is automatically enabled if any SSL setting is set.
+    #ssl.enabled: true
+
+    # Configure SSL verification mode. If `none` is configured, all server hosts
+    # and certificates will be accepted. In this mode, SSL based connections are
+    # susceptible to man-in-the-middle attacks. Use only for testing. Default is
+    # `full`.
+    #ssl.verification_mode: full
+
+    # List of supported/valid TLS versions. By default all TLS versions from 1.0 up to
+    # 1.2 are enabled.
+    #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+
+    # Optional SSL configuration options. SSL is off by default.
+    # List of root certificates for HTTPS server verifications
+    #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+
+    # Certificate for SSL client authentication
+    #ssl.certificate: "/etc/pki/client/cert.pem"
+
+    # Client certificate key
+    #ssl.key: "/etc/pki/client/cert.key"
+
+    # Optional passphrase for decrypting the Certificate Key.
+    #ssl.key_passphrase: ''
+
+    # Configure cipher suites to be used for SSL connections
+    #ssl.cipher_suites: []
+
+    # Configure curve types for ECDHE-based cipher suites
+    #ssl.curve_types: []
+
+    # Configure what types of renegotiation are supported. Valid options are
+    # never, once, and freely. Default is never.
+    #ssl.renegotiation: never
+
+    # The number of times to retry publishing an event after a publishing failure.
+    # After the specified number of retries, the events are typically dropped.
+    # Some Beats, such as Filebeat and Winlogbeat, ignore the max_retries setting
+    # and retry until all events are published.  Set max_retries to a value less
+    # than 0 to retry until all events are published. The default is 3.
+    #max_retries: 3
+
+    # The maximum number of events to bulk in a single Logstash request. The
+    # default is 2048.
+    #bulk_max_size: 2048
+
+    # The number of seconds to wait for responses from the Logstash server before
+    # timing out. The default is 30s.
+    #timeout: 30s
